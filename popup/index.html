@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, sans-serif; 
+      min-width: 320px; 
+      padding: 20px; 
+      background: #ffffff; 
+      margin: 0; 
+      color: #24292e; 
+    }
+    h3 { margin-top: 0; font-size: 18px; border-bottom: 2px solid #eaecef; padding-bottom: 10px;}
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #586069; }
+    input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #d1d5da; border-radius: 4px; font-size: 13px; }
+    input:focus { border-color: #0366d6; outline: none; }
+    .btn { width: 100%; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 5px; }
+    .btn-primary { background-color: #2ea44f; color: white; }
+    .btn-primary:hover { background-color: #22863a; }
+    .btn-secondary { background-color: #fafbfc; color: #24292e; border: 1px solid #d1d5da; margin-top: 15px;}
+    .btn-secondary:hover { background-color: #f3f4f6; }
+    .status { margin-top: 10px; font-size: 12px; text-align: center; min-height: 15px; font-weight: bold; }
+    .divider { height: 1px; background: #eaecef; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <h3>⚙️ Code Sync Settings</h3>
+  
+  <div class="form-group">
+    <label for="githubToken">GitHub Personal Access Token</label>
+    <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+  </div>
+  
+  <div class="form-group">
+    <label for="githubRepo">GitHub Repository</label>
+    <input type="text" id="githubRepo" placeholder="username/repo-name">
+  </div>
+  
+  <button id="saveBtn" class="btn btn-primary">Save Settings</button>
+  <div id="saveStatus" class="status"></div>
+
+  <div class="divider"></div>
+  
+  <p style="font-size: 12px; color: #586069; margin-bottom: 10px;">Push all previously accepted LeetCode problems to your GitHub repository.</p>
+  <button id="syncBtn" class="btn btn-secondary">🚀 Sync All Past Problems</button>
+  <div id="syncStatus" class="status"></div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
