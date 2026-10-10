@@ -1,3 +1,4 @@
+// 1. When the popup opens, load any saved credentials and fill the boxes
 document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.local.get(['githubToken', 'githubRepo'], (result) => {
     if (result.githubToken) document.getElementById('githubToken').value = result.githubToken;
@@ -5,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// 2. When the Save button is clicked, save the credentials securely
 document.getElementById('saveBtn').addEventListener('click', () => {
   const token = document.getElementById('githubToken').value.trim();
   const repo = document.getElementById('githubRepo').value.trim();
@@ -12,20 +14,22 @@ document.getElementById('saveBtn').addEventListener('click', () => {
 
   if (!token || !repo) {
     statusDiv.innerText = "Please fill in both fields!";
-    statusDiv.style.color = "#cb2431";
+    statusDiv.style.color = "#cb2431"; // Red
     return;
   }
 
   chrome.storage.local.set({ 'githubToken': token, 'githubRepo': repo }, () => {
     statusDiv.innerText = "Settings saved successfully!";
-    statusDiv.style.color = "#28a745";
-    setTimeout(() => { statusDiv.innerText = ""; }, 3000);
+    statusDiv.style.color = "#28a745"; // Green
+    setTimeout(() => { statusDiv.innerText = ""; }, 3000); // Clear message after 3 seconds
   });
 });
 
+// 3. When the Sync button is clicked, start the mass sync (if credentials exist)
 document.getElementById('syncBtn').addEventListener('click', () => {
   const statusDiv = document.getElementById('syncStatus');
   
+  // First, check if they actually saved their settings
   chrome.storage.local.get(['githubToken', 'githubRepo'], (result) => {
     if (!result.githubToken || !result.githubRepo) {
       statusDiv.innerText = "Error: Please save your GitHub settings first!";
@@ -33,8 +37,8 @@ document.getElementById('syncBtn').addEventListener('click', () => {
       return;
     }
 
-    statusDiv.innerText = "Sync started! Keep this window open.";
-    statusDiv.style.color = "#0366d6";
+    statusDiv.innerText = "Sync started! Keep this window open. Check extension errors for progress.";
+    statusDiv.style.color = "#0366d6"; // Blue
     
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
       let activeTab = tabs[0];

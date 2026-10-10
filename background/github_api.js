@@ -1,10 +1,10 @@
 export async function pushToGitHub(token, repo, path, content, message) {
     const url = `https://api.github.com/repos/${repo}/contents/${path}`;
     
-    // Safely encode content to Base64 (handles Unicode, emojis, and SQL tables)
+    // 1. Safely encode content to Base64 (Handles SQL tables, Unicode, and emojis without crashing)
     const base64Content = btoa(unescape(encodeURIComponent(content)));
     
-    // Fetch file SHA if it already exists (required by GitHub for updates)
+    // 2. Fetch the file's current SHA if it already exists (GitHub strictly requires this for updates)
     let sha = null;
     const getResponse = await fetch(url, {
         headers: {
@@ -18,11 +18,13 @@ export async function pushToGitHub(token, repo, path, content, message) {
         sha = fileData.sha;
     }
 
+    // 3. Upload the new code/README
     const body = {
         message: message,
         content: base64Content
     };
     
+    // Inject the SHA into our request if we are overwriting an older, slower submission
     if (sha) {
         body.sha = sha; 
     }

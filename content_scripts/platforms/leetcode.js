@@ -53,6 +53,7 @@ async function fetchCodeAndSend() {
     
     const submissionId = parseInt(submissions[0].id);
 
+    // NEW: We added "runtime" to the API request
     const detailResponse = await fetch("https://leetcode.com/graphql", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrftoken": csrf },
@@ -66,7 +67,7 @@ async function fetchCodeAndSend() {
     const detailData = await detailResponse.json();
     const finalCode = detailData.data.submissionDetails.code;
     const finalLanguage = detailData.data.submissionDetails.lang.name;
-    const runtimeStr = detailData.data.submissionDetails.runtime; 
+    const runtimeStr = detailData.data.submissionDetails.runtime; // e.g., "55 ms"
 
     chrome.runtime.sendMessage({
       action: "PUSH_SUBMISSION",

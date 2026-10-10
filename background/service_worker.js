@@ -15,6 +15,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true; 
 });
 
+// Helper to get credentials dynamically before every upload
 async function getCredentials() {
   const data = await chrome.storage.local.get(['githubToken', 'githubRepo']);
   if (!data.githubToken || !data.githubRepo) {
@@ -36,8 +37,8 @@ async function checkPerformanceAndUpload(data) {
 
     if (!pastRecord || currentRuntimeMs <= pastRecord.bestRuntime) {
       console.log(`Uploading! New best time: ${currentRuntimeMs}ms`);
-      const folderLang = language.charAt(0).toUpperCase() + language.slice(1);
       
+      const folderLang = language.charAt(0).toUpperCase() + language.slice(1);
       const codeFilePath = `${platform}/${folderLang}/${problemName}/solution.${fileExt}`;
       const readmeFilePath = `${platform}/${folderLang}/${problemName}/README.md`;
       const commitMsg = `Add ${language} solution for ${problemName} - Runtime: ${runtime}`;
@@ -58,6 +59,7 @@ async function startMassSync(csrfToken) {
   console.log("Starting Mass Sync...");
   
   try {
+    // Ensure credentials exist before starting the massive loop
     await getCredentials(); 
 
     const response = await fetch("https://leetcode.com/api/problems/all/");
@@ -85,6 +87,7 @@ async function startMassSync(csrfToken) {
 
 async function syncSingleHistoricalProblem(problemName, csrf) {
   try {
+    // 1. FIX: Fetch the actual Problem Description via LeetCode's GraphQL API
     const questionResponse = await fetch("https://leetcode.com/graphql", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrftoken": csrf },
@@ -96,9 +99,12 @@ async function syncSingleHistoricalProblem(problemName, csrf) {
         })
     });
     const questionData = await questionResponse.json();
+    
+    // Safely extract the HTML content, or provide a fallback if it fails
     const descriptionHTML = questionData?.data?.question?.content || "Description not available.";
     const fullReadme = `# ${problemName}\n\n## Problem Description\n\n${descriptionHTML}`;
 
+    // 2. Fetch the submission list
     const listResponse = await fetch("https://leetcode.com/graphql", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrftoken": csrf },
@@ -112,12 +118,21 @@ async function syncSingleHistoricalProblem(problemName, csrf) {
         })
     });
     const listData = await listResponse.json();
+    
+    // FIX: Safely check if submissions exist before trying to read them (Prevents the crash!)
     const submissions = listData?.data?.questionSubmissionList?.submissions;
-    if (!submissions || submissions.length === 0) return;
+    if (!submissions || submissions.length === 0) {
+        console.warn(`No submissions found for ${problemName}. Skipping.`);
+        return;
+    }
     
     const acceptedSub = submissions.find(sub => sub.statusDisplay === "Accepted");
-    if (!acceptedSub) return;
+    if (!acceptedSub) {
+        console.warn(`No accepted submissions found for ${problemName} in recent history.`);
+        return;
+    }
 
+    // 3. Fetch submission details for the exact code
     const detailResponse = await fetch("https://leetcode.com/graphql", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-csrftoken": csrf },
@@ -131,18 +146,24 @@ async function syncSingleHistoricalProblem(problemName, csrf) {
     const detailData = await detailResponse.json();
     const dataObj = detailData?.data?.submissionDetails;
 
-    if (!dataObj) return;
+    // FIX: Safely check if the code details exist
+    if (!dataObj) {
+         console.warn(`Could not fetch code details for ${problemName}. Skipping.`);
+         return;
+    }
 
+    // 4. Send to our uploader with the REAL Readme
     await checkPerformanceAndUpload({
       platform: "LeetCode",
       problemName: problemName,
       code: dataObj.code,
       language: dataObj.lang.name,
-      readme: fullReadme,
+      readme: fullReadme, 
       runtime: dataObj.runtime
     });
 
   } catch (err) {
+    // FIX: Log the actual error stack trace so we can see exactly what breaks if it fails again
     console.error(`Failed historical sync for ${problemName}:`, err);
   }
 }
