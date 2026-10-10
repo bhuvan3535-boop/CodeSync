@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Sync Code to GitHub",
+  "version": "1.0",
+  "permissions": [
+    "storage",
+    "webRequest",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://api.github.com/*",
+    "https://leetcode.com/*"
+  ],
+  "background": {
+    "service_worker": "background/service_worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://leetcode.com/problems/*"],
+      "js": ["content_scripts/platforms/leetcode.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup/index.html"
+  }
+}
